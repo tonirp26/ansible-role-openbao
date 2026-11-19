@@ -1,0 +1,44 @@
+# Configuration reference: https://openbao.org/docs/configuration/
+
+ui = {{ openbao_ui | bool | ternary('true', 'false') }}
+
+storage "{{ openbao_storage_backend }}" {
+  path = "{{ openbao_storage_path }}"
+}
+
+listener "tcp" {
+  address                                 = "{{ openbao_listen_address }}"
+  tls_cert_file                           = "{{ openbao_tls_cert_file }}"
+  tls_key_file                            = "{{ openbao_tls_key_file }}"
+  tls_min_version                         = "{{ openbao_tls_min_version }}"
+  disable_unauthed_rekey_endpoints        = true # This is set by default, security risk in public listeners
+  disable_unauthed_generate_root_endpoints = true # This is set by default, security risk in public listeners
+
+  telemetry {
+    disallow_metrics = {{ openbao_disallow_metrics | bool | ternary('true', 'false') }}
+  }
+}
+
+{% if openbao_api_addr | length > 0 %}
+api_addr = "{{ openbao_api_addr }}"
+{% endif %}
+{% if openbao_cluster_addr | length > 0 %}
+cluster_addr = "{{ openbao_cluster_addr }}"
+{% endif %}
+
+{% if openbao_audit_enabled | bool %}
+audit "file" "{{ openbao_audit_path }}" {
+  options = {
+    file_path = "{{ openbao_audit_path }}"
+  }
+}
+{% if openbao_audit_file_enabled | bool %}
+audit "file" "{{ openbao_audit_file_device_path }}" {
+  description = "Write audit information to a local file."
+  options = {
+    file_path = "{{ openbao_audit_file_log_path }}"
+    mode      = "{{ openbao_audit_file_mode }}"
+  }
+}
+{% endif %}
+{% endif %}

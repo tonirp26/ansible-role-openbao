@@ -30,3 +30,28 @@
     name: "openbao={{ openbao_version }}"
     state: present
     update_cache: true
+    # openbao.hcl is a dpkg conffile; keep the Ansible-managed version on upgrades.
+    dpkg_options: "force-confold"
+
+- name: Ensure the file audit device log directory exists
+  ansible.builtin.file:
+    path: "{{ openbao_audit_file_log_path | dirname }}"
+    state: directory
+    owner: openbao
+    group: openbao
+    mode: "0750"
+  when:
+    - openbao_audit_enabled | bool
+    - openbao_audit_file_enabled | bool
+    - openbao_audit_file_log_path | dirname != "."
+    - openbao_audit_file_log_path not in ["stdout", "discard"]
+
+- name: Deploy OpenBao server configuration
+  ansible.builtin.template:
+    src: openbao.hcl.j2
+    dest: "{{ openbao_config_file }}"
+    owner: "{{ openbao_config_owner }}"
+    group: "{{ openbao_config_group }}"
+    mode: "{{ openbao_config_mode }}"
+    validate: "/usr/bin/bao operator validate-config -config=%s"
+  notify: Reload OpenBao

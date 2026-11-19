@@ -1,3 +1,33 @@
 ---
 # Variables for OpenBao installation
 openbao_version: "2.7.2"
+
+# Server configuration file
+openbao_config_file: "/etc/openbao/openbao.hcl"
+openbao_config_owner: "root"
+openbao_config_group: "openbao"
+openbao_config_mode: "0640"
+
+# Listener. Change openbao_listen_address to a private/VPN IP if the
+# containers consuming secrets do not run on the OpenBao host itself.
+openbao_ui: false
+openbao_listen_address: "127.0.0.1:8200"
+openbao_api_addr: "https://127.0.0.1:8200"
+openbao_cluster_addr: "https://127.0.0.1:8201"
+openbao_tls_cert_file: "/opt/openbao/tls/tls.crt"
+openbao_tls_key_file: "/opt/openbao/tls/tls.key"
+openbao_tls_min_version: "tls12"
+openbao_disallow_metrics: true # Recomended for hardening a listener.
+
+# Storage and audit
+openbao_storage_backend: "pebbledb"
+openbao_storage_path: "/opt/openbao/data"
+
+# OpenBao recommends more than one audit device: a request succeeds as long as
+# at least one device can write it. Device paths must be unique.
+openbao_audit_enabled: true
+openbao_audit_path: "stdout"
+openbao_audit_file_enabled: true
+openbao_audit_file_device_path: "file"
+openbao_audit_file_log_path: "/var/log/openbao/audit.log"
+openbao_audit_file_mode: "0600"
